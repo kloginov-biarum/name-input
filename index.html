@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Name validation</title>
+    <style>
+      :root {
+        --spacing: 12px;
+        --radius: 8px;
+        --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      }
+
+      body {
+        font-family: var(--font);
+        margin: 0;
+        background: #0f172a;
+        color: #e2e8f0;
+        display: grid;
+        place-items: center;
+        min-height: 100svh;
+      }
+
+      .card {
+        width: min(92vw, 520px);
+        background: #111827;
+        border: 1px solid #1f2937;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow:
+          0 10px 15px -3px rgba(0, 0, 0, 0.3),
+          0 4px 6px -4px rgba(0, 0, 0, 0.3);
+      }
+
+      h1 {
+        margin: 0 0 16px 0;
+        font-size: 22px;
+      }
+
+      label {
+        display: block;
+        font-size: 14px;
+        color: #94a3b8;
+        margin-bottom: 6px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+      }
+
+      input[type="text"] {
+        background: #0b1220;
+        border: 1px solid #243047;
+        color: #e2e8f0;
+        padding: 10px 12px;
+        border-radius: var(--radius);
+        outline: none;
+        transition: border-color 0.2s ease;
+      }
+
+      input[type="text"]:focus {
+        border-color: #3b82f6;
+      }
+
+      button {
+        padding: 10px 14px;
+        background: #2563eb;
+        color: white;
+        border: 0;
+        border-radius: var(--radius);
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #1d4ed8;
+      }
+
+      .message {
+        margin-top: 14px;
+        font-size: 14px;
+      }
+
+      .error {
+        color: #fca5a5;
+      }
+
+      .success {
+        color: #86efac;
+      }
+
+      .illustration {
+        display: block;
+        margin: 18px auto 0;
+        width: 220px;
+        height: auto;
+        filter: drop-shadow(0 6px 12px rgba(0,0,0,0.35));
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Name validation</h1>
+      <form id="nameForm" novalidate>
+        <label for="nameInput">Name</label>
+        <div class="row">
+          <input id="nameInput" type="text" placeholder="Enter name" />
+          <button id="okBtn" type="submit">Ok</button>
+        </div>
+        <div id="message" class="message" aria-live="polite"></div>
+      </form>
+      <img
+        src="./laptop2.png"
+        alt="Cute dragon using a laptop"
+        class="illustration"
+        onerror="this.style.display='none'"
+      />
+    </div>
+
+    <script>
+      const form = document.getElementById('nameForm');
+      const input = document.getElementById('nameInput');
+      const messageEl = document.getElementById('message');
+
+      function setMessage(text, isError) {
+        messageEl.textContent = text;
+        messageEl.className = 'message ' + (isError ? 'error' : 'success');
+      }
+
+      // Простейшая (и намеренно несовершенная) валидация
+      function isNameValid(name) {
+        // БАГ №1: длина > 2 (строго больше), поэтому имена из 2 символов считаются невалидными
+        if (name.length > 2 === false) return false;
+
+        // БАГ №2 (обновлённый): наивная проверка "заглавности" — допускает цифры и символы
+        // Первым символом может быть любое, что равно своему toUpperCase(), поэтому числа проходят
+        const startsWithUpper = name[0] && name[0] === name[0].toUpperCase();
+        if (!startsWithUpper) return false;
+
+        // БАГ №3: отсутствие нормального trim — пробелы по краям считаются частью имени
+        // (намеренно не используем name.trim())
+
+        // БАГ №4: «разрешённые символы» проверяются неправильно — условие проходит,
+        // если в строке есть ХОТЯ БЫ ОДНА буква, а не все символы валидны
+        const hasAnyLetter = /[A-Za-zА-Яа-яЁё\-']/u.test(name);
+        if (!hasAnyLetter) return false;
+
+        // Числа и прочие символы здесь не отфильтрованы (см. БАГ №4)
+        return true;
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const raw = input.value;
+        const valid = isNameValid(raw);
+        if (!valid) {
+          setMessage('Name is invalid. Try, for example: Michael, Emily, John.', true);
+        } else {
+          setMessage('Name is valid.', false);
+        }
+      });
+    </script>
+  </body>
+  </html>
+
+
